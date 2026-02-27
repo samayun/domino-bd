@@ -1,468 +1,954 @@
-<!-- 
-    Domino ThreeJS creado por Josep Antoni Bover Comas el 16/01/2019
-
-        Indice
-
-        Vista por defecto en el Laboratorio de pruebas  
-		devildrey33_Lab->Opciones->Vista = Filas;
-
-        Ultima modificación el 28/02/2019
--->
 <!DOCTYPE html>
-<html lang='en'>
-    <head>
-        <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-        <title>Dominó Three.js</title>
-        <!-- Manifest para que la WebApp se mantenga siempre en modo landscape (NO VA?!?!?!) -->
-        <link rel="manifest" href="./manifest.json">
-        <!-- Estilos CSS para el objeto canvas -->
-        <link rel='stylesheet' href='https://devildrey33.github.io/ObjetoCanvas/CSS/ObjetoCanvas.css' />       
-        <!--<link rel='stylesheet' href='http://objetocanvas.st0rm/CSS/ObjetoCanvas.css' />        -->
-        <link rel='stylesheet' href='./CSS/Domino.css' />        
-                
-        <!-- Three.JS -->
-        <script src="https://devildrey33.github.io/ObjetoCanvas/JS/three.min.js"></script>
-        <!-- ObjetoCanvas similar al ObjetoBanner para testear Banners -->
-        <script src="https://devildrey33.github.io/ObjetoCanvas/JS/ObjetoCanvas.js"></script>
-        <!--<script src="http://objetocanvas.st0rm/JS/ObjetoCanvas.js"></script>-->
-        <!-- Objeto para crear animaciones de tiempo -->
-        <script src="https://devildrey33.github.io/ObjetoAnimacion/JS/ObjetoAnimacion.js"></script>
+<html lang="en">
 
-        <script src="./JS/Domino_Texturas.js"></script>        
-        <script src="./JS/Domino_Ficha.js"></script>        
-        <script src="./JS/Domino_UI.js"></script>        
-        <script src="./JS/Domino_Opciones.js"></script>        
-        <script src="./JS/Domino_Partida.js"></script>        
-        <script src="./JS/Domino.js"></script>        
-    </head>
-    <body>
-        
-        <!-- Marco para empezar partida -->
-        <div id='MarcoEmpezar' class='MarcoCanvas'>
-            <h1>
-                <span data-idioma-en='Welcome to Domino ' 
-                      data-idioma-cat="Benvingut a Dominó " 
-                      data-idioma-es='Bienvenido a Dominó '></span> 
-                <span id="VersionDomino">0.00</span>
-            </h1>
-            <hr />            
-            
-            <button id="BotonEquipos" 
-                    data-idioma-en='Team names' 
-                    data-idioma-cat="Noms d'equips" 
-                    data-idioma-es='Nombres de equipos'></button>
-            <br />
-            <button id="BotonOpciones"
-                    data-idioma-en='Options' 
-                    data-idioma-cat="Opcions" 
-                    data-idioma-es='Opciones'></button>
-            <hr />
-            
-            <h3>
-                <span data-idioma-en='Points to finish the game' 
-                      data-idioma-cat="Punts per acabar el joc" 
-                      data-idioma-es='Puntos para terminar la partida'></span>
-            </h3>
-            
-            <div class="Centrado">
-                <button id="Puntos100">100</button>
-                <button id="Puntos200">200</button>
-                <button id="Puntos300">300</button>
-                <button id="Puntos400">400</button>
-                <button id="Puntos500">500</button>
-                <button id="Puntos600">600</button>
-            </div>           
-            <br />
-            
-            <button id="BotonEmpezar"
-                    data-idioma-en='Start!' 
-                    data-idioma-cat="Començar!" 
-                    data-idioma-es='Empezar!'></button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangladeshi Dominoes - Royal Multiplayer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #020617;
+            --table-color: #0f172a;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #ec4899;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --color-0: #f1f5f9;
+            --color-1: #000000;
+            --color-2: #22c55e;
+            --color-3: #ec4899;
+            --color-4: #64748b;
+            --color-5: #1e3a8a;
+            --color-6: #eab308;
+            --glass: rgba(15, 23, 42, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
 
-        </div>
-        <!-- Opciones de los Equipos -->
-        <div id="MarcoEquipos" class='MarcoCanvas'>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
 
-            <h3>
-                <span
-                    data-idioma-en='Team names' 
-                    data-idioma-cat="Noms dels equips" 
-                    data-idioma-es='Nombres de los equipos'></span>
-            </h3>
-            <div class="TablaPuntos"> 
-                <table>
-                    <tr>
-                        <td>
-                            <!-- maxlength="16" -->
-                            <input type="text" id="NEquipo1" placeholder="Equipo 1" spellcheck="false">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" id="NNombre1" placeholder="Jugador 1" spellcheck="false">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" id="NNombre3" placeholder="Jugador 3" spellcheck="false">
-                        </td>
-                    </tr>
-                </table>
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #020617 100%);
+        }
 
-                <table>
-                    <tr>
-                        <td>
-                            <input type="text" id="NEquipo2" placeholder="Equipo 2" spellcheck="false"> 
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" id="NNombre2" placeholder="Jugador 2" spellcheck="false">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" id="NNombre4" placeholder="Jugador 4" spellcheck="false">
-                        </td>
-                    </tr>
-                </table>
+        /* --- Dashboard --- */
+        #dashboard {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            position: absolute;
+            background: var(--bg-color);
+            pointer-events: all;
+        }
+
+        .lobby-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(25px);
+        }
+
+        .input-group {
+            margin: 25px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .player-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .player-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: 15px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .player-btn.selected {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+        }
+
+        .player-btn span.seat-status {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* --- Main Layout --- */
+        #game-view {
+            width: 100%;
+            height: 100%;
+            display: none;
+            grid-template-rows: 80px 1fr 180px;
+            padding: 20px;
+            position: relative;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        .stat-badge {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #main-board {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 40px;
+            margin: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5);
+        }
+
+        #board-viewport {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            padding: 400px;
+            scroll-behavior: smooth;
+        }
+
+        #domino-chain {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 100px;
+            transition: transform 0.3s ease;
+        }
+
+        /* --- Domino Tile --- */
+        .domino {
+            width: 56px;
+            height: 110px;
+            background: #ffffff;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .domino.horizontal {
+            width: 110px;
+            height: 56px;
+            flex-direction: row;
+        }
+
+        .domino.playable {
+            box-shadow: 0 0 25px var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+            transform: translateY(-8px);
+        }
+
+        .domino:hover {
+            transform: translateY(-15px) scale(1.05);
+            z-index: 100;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .domino .half {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 4px;
+        }
+
+        .domino .divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            width: 85%;
+            margin: 0 auto;
+            border-radius: 1px;
+        }
+
+        .domino.horizontal .divider {
+            width: 1px;
+            height: 85%;
+            margin: auto 0;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin: auto;
+            box-shadow: inset 1px 1.5px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        .dot.v1 {
+            background: var(--color-1);
+        }
+
+        .dot.v2 {
+            background: var(--color-2);
+        }
+
+        .dot.v3 {
+            background: var(--color-3);
+        }
+
+        .dot.v4 {
+            background: var(--color-4);
+        }
+
+        .dot.v5 {
+            background: var(--color-5);
+        }
+
+        .dot.v6 {
+            background: var(--color-6);
+        }
+
+        /* Positions */
+        .d1 {
+            grid-area: 2 / 2;
+        }
+
+        .d2a {
+            grid-area: 1 / 3;
+        }
+
+        .d2b {
+            grid-area: 3 / 1;
+        }
+
+        .d3a {
+            grid-area: 1 / 3;
+        }
+
+        .d3b {
+            grid-area: 2 / 2;
+        }
+
+        .d3c {
+            grid-area: 3 / 1;
+        }
+
+        .d4a {
+            grid-area: 1 / 1;
+        }
+
+        .d4b {
+            grid-area: 1 / 3;
+        }
+
+        .d4c {
+            grid-area: 3 / 1;
+        }
+
+        .d4d {
+            grid-area: 3 / 3;
+        }
+
+        .d5a {
+            grid-area: 1 / 1;
+        }
+
+        .d5b {
+            grid-area: 1 / 3;
+        }
+
+        .d5c {
+            grid-area: 2 / 2;
+        }
+
+        .d5d {
+            grid-area: 3 / 1;
+        }
+
+        .d5e {
+            grid-area: 3 / 3;
+        }
+
+        .d6a {
+            grid-area: 1 / 1;
+        }
+
+        .d6b {
+            grid-area: 1 / 3;
+        }
+
+        .d6c {
+            grid-area: 2 / 1;
+        }
+
+        .d6d {
+            grid-area: 2 / 3;
+        }
+
+        .d6e {
+            grid-area: 3 / 1;
+        }
+
+        .d6f {
+            grid-area: 3 / 3;
+        }
+
+        /* --- Players --- */
+        .player-tag {
+            position: absolute;
+            padding: 12px 24px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            z-index: 5;
+            transition: 0.4s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-tag.active {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+            transform: scale(1.1);
+            color: var(--text-primary);
+        }
+
+        .player-tag .name {
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 4px;
+            padding-bottom: 2px;
+        }
+
+        .player-tag .status {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #tag-top {
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #tag-right {
+            top: 50%;
+            right: 60px;
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        #tag-left {
+            top: 50%;
+            left: 60px;
+            transform: translateY(-50%) rotate(-90deg);
+        }
+
+        #tag-bottom {
+            bottom: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* --- Footer Hand --- */
+        #footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            padding: 10px;
+        }
+
+        .hand-container {
+            width: 100%;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            background: var(--glass);
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(25px);
+            position: relative;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #my-hand {
+            display: flex;
+            gap: 12px;
+            padding: 10px 30px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            align-items: center;
+        }
+
+        /* --- Action UI --- */
+        #action-bar {
+            position: absolute;
+            right: 50px;
+            bottom: 220px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .action-btn {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            pointer-events: all;
+            text-transform: uppercase;
+            box-shadow: 0 15px 30px rgba(56, 189, 248, 0.4);
+            display: none;
+        }
+
+        /* --- Overlays --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(15px);
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #0f172a;
+            padding: 50px;
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            max-width: 500px;
+            width: 95%;
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-prime {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            width: 100%;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        #toast {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 40px;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 50px;
+            font-weight: 800;
+            opacity: 0;
+            transition: 0.4s;
+            z-index: 4000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        #toast.show {
+            opacity: 1;
+            top: 140px;
+        }
+
+        .boneyard {
+            position: absolute;
+            left: 60px;
+            bottom: 220px;
+            text-align: center;
+        }
+
+        .card-back {
+            width: 44px;
+            height: 22px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            border: 1px solid #94a3b8;
+            margin-bottom: -18px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOBBY -->
+    <div id="dashboard">
+        <div class="lobby-card">
+            <h1 style="font-size: 2.5rem; letter-spacing: -2px; margin-bottom: 5px;">DOMINO <span
+                    style="color:var(--accent-primary)">ROYAL</span></h1>
+            <p style="color:var(--text-secondary); margin-bottom: 30px;">Premium Bangladeshi Experience</p>
+
+            <div class="input-group">
+                <input type="text" id="name-input" placeholder="Enter Your Name">
+                <input type="text" id="room-input" placeholder="Enter Room (e.g. BD-CLUB)">
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 10px;">Select Your Seat:</p>
+                <div class="player-selector">
+                    <button class="player-btn" onclick="selectSeat(0)">Seat 1 <span class="seat-status"
+                            id="seat-0">-</span></button>
+                    <button class="player-btn" onclick="selectSeat(1)">Seat 2 <span class="seat-status"
+                            id="seat-1">-</span></button>
+                    <button class="player-btn" onclick="selectSeat(2)">Seat 3 <span class="seat-status"
+                            id="seat-2">-</span></button>
+                    <button class="player-btn" onclick="selectSeat(3)">Seat 4 <span class="seat-status"
+                            id="seat-3">-</span></button>
+                </div>
             </div>
-            <br />
-            <button id="BotonCerrarEquipos"
-                    data-idioma-en='Close' 
-                    data-idioma-cat="Tancar" 
-                    data-idioma-es='Cerrar'></button>            
-        </div>
-        
-        <!-- Opciones generales -->
-        <div id="MarcoOpciones" class='MarcoCanvas'>
 
-            <h3>
-                <span
-                    data-idioma-en='Language' 
-                    data-idioma-cat="Idioma" 
-                    data-idioma-es='Idioma'></span>
-            </h3>
-            <table class="Centrado">
-                <tr>
-                    <td><button id="Idioma_en">English</button></td>
-                    <td><button id="Idioma_cat">Català</button></td>
-                    <td><button id="Idioma_es">Castellano</button></td>
-                </tr>
-            </table>
-            
-            <hr />
-            
-            <table class="Centrado">
-                <tr>
-                    <td>
-                        <span 
-                            data-idioma-en='Play uncovered' 
-                            data-idioma-cat='Jugar al descobert' 
-                            data-idioma-es='Jugar al descubierto'></span>
-                        </td>
-                    <td><input type="checkbox" id="Opciones_Descubierto"></td>
-                </tr>
-                <tr>
-                    <td>    
-                        <span 
-                            data-idioma-en='Animate light for actual player' 
-                            data-idioma-cat='Animar llum pel jugador actual' 
-                            data-idioma-es='Animar luz para el jugador actual'></span>
-                        </td>
-                    <td><input type="checkbox" id="Opciones_AnimarTurno"></td>
-                </tr>
-                <tr>
-                    <td>
-                        <span 
-                            data-idioma-en='Help for player' 
-                            data-idioma-cat='Ajuda pel jugador' 
-                            data-idioma-es='Ayuda para el jugador'></span>
-                        </td>
-                    <td><input type="checkbox" id="Opciones_Ayuda"></td>
-                </tr>
-            </table>  
-            <br />
-            <button id="BotonCerrarOpciones"
-                    data-idioma-en='Close' 
-                    data-idioma-cat="Tancar" 
-                    data-idioma-es='Cerrar'></button>            
+            <button class="btn-prime" onclick="joinRoom()">JOIN TABLE</button>
         </div>
-        
-        
-        <!-- Victoria de un equipo (un jugador se ha quedado sin fichas) -->
-        <div id="MarcoContinuar"  class='MarcoCanvas'>
-            <h1>
-                <span data-idioma-en='Hand is over' 
-                      data-idioma-cat="Mà finalitzada" 
-                      data-idioma-es='Mano terminada'></span>
-            </h1>
-            <div class="TablaPuntos2">
-                <table>
-                    <tr>
-                        <td id="MV_E1">Equipo 1</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td id="MVN_P1">Jugador 1</td>
-                        <td>=</td>
-                        <td id="MV_P1">x</td>
-                    </tr>
-                    <tr>
-                        <td id="MVN_P3">Jugador 3</td>
-                        <td>=</td>
-                        <td id="MV_P3">x</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td id="MV_P13">x</td>
-                    </tr>
-                </table>
+    </div>
 
-                <table>
-                    <tr>
-                        <td id="MV_E2">Equipo 2</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td id="MVN_P2">Jugador 2</td>
-                        <td>=</td>
-                        <td id="MV_P2">x</td>
-                    </tr>
-                    <tr>
-                        <td id="MVN_P4">Jugador 4</td>
-                        <td>=</td>
-                        <td id="MV_P4">x</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td id="MV_P24">x</td>
-                    </tr>
-                </table>
-            </div>            
-            
-            <h3>
-                <span class="AniResaltar" id="PG_Equipo">x</span>
-                <span
-                    data-idioma-en=' has won! and gets ' 
-                    data-idioma-cat=" ha guanyat! i suma " 
-                    data-idioma-es=' ha ganado! y suma '></span>
-                
-                <span class="AniResaltar" id="PG_Puntos">x</span>
-                <span
-                    data-idioma-en=' points.' 
-                    data-idioma-cat=" punts." 
-                    data-idioma-es=' puntos.'></span>
-            </h3>
-            <button id="BotonContinuar"
-                    data-idioma-en='Next hand' 
-                    data-idioma-cat="Continuar" 
-                    data-idioma-es='Continuar'></button>
-        </div>
-        
-        <!-- Marco para mostrar los datos del Empate -->
-        <div id="MarcoEmpate" class='MarcoCanvas'>
-            <h1><span 
-                    data-idioma-en='TIE!' 
-                    data-idioma-cat="EMPAT!" 
-                    data-idioma-es='EMPATE!'>                
-                </span>
-            </h1>
-            <p><span
-                    data-idioma-en='Team who sums less points, won.' 
-                    data-idioma-cat="L'equip que suma menys punts, guanya." 
-                    data-idioma-es='El equipo que suma menos puntos, gana.'>                                
-                </span></p>
-            <!--<p>Si los dos equipos tienen la misma cantidad de puntos, nadie gana.</p> -->
-            <br />
-            <div class="TablaPuntos">
-                <table>
-                    <tr>
-                        <td id="ME_E1">Equipo 1</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td id="MEN_P1">Jugador 1</td>
-                        <td>=</td>
-                        <td id="ME_P1">x</td>
-                    </tr>
-                    <tr>
-                        <td id="MEN_P3">Jugador 3</td>
-                        <td>=</td>
-                        <td id="ME_P3">x</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td id="ME_P13">x</td>
-                    </tr>
-                </table>
-
-                <table>
-                    <tr>
-                        <td id="ME_E2">Equipo 2</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td id="MEN_P2">Jugador 2</td>
-                        <td>=</td>
-                        <td id="ME_P2">x</td>
-                    </tr>
-                    <tr>
-                        <td id="MEN_P4">Jugador 4</td>
-                        <td>=</td>
-                        <td id="ME_P4">x</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td id="ME_P24">x</td>
-                    </tr>
-                </table>
+    <!-- GAME VIEW -->
+    <div id="game-view">
+        <header>
+            <div class="logo">DOMINO</div>
+            <div class="stats-container">
+                <div class="stat-badge">ROOM: <span id="display-room" style="color:var(--accent-primary)">-</span></div>
+                <div class="stat-badge">ME: <span id="display-name" style="color:var(--accent-secondary)">-</span></div>
+                <button onclick="location.reload()" class="stat-badge"
+                    style="cursor:pointer; background:rgba(255,0,0,0.1); color:#f87171;">EXIT</button>
             </div>
-            <br />
-            
-            <!-- Texto para la victoria por puntos despues de un bloqueo (al quedarse todos los jugadores sin posibilidad de tirar, antes de quedarse sin fichas) -->
-            <p id="TxtVictoria">
-                <span class="AniResaltar" id="TxtVictoriaEquipo">x</span>                 
-                <span 
-                    data-idioma-en=' has won! and gets ' 
-                    data-idioma-cat=" ha guanyat! i suma " 
-                    data-idioma-es=' ha ganado! y suma '></span> 
-                <span class="AniResaltar" id="TxtVictoriaPuntos">x</span>
-                <span
-                    data-idioma-en=' points.' 
-                    data-idioma-cat=" punts." 
-                    data-idioma-es=' puntos.'></span>
-            </p>
-            
-            <!-- Texto para el empate, al quedarse todos los jugadores sin poder tirar, y que los dos equipos sumen los mismos puntos -->
-            <p id="TxtEmpate"><span 
-               data-idioma-en='TIE, no one get points' 
-               data-idioma-cat="EMPAT, no es reparteixen punts" 
-               data-idioma-es='EMPATE, no se reparten puntos'
-               ></span>
-            </p>
-            <br />
-            <button id="BotonContinuar2"
-                    data-idioma-en='Continue' 
-                    data-idioma-cat="Continuar" 
-                    data-idioma-es='Continuar'></button>
+        </header>
+
+        <div id="main-board">
+            <div id="board-viewport">
+                <div id="domino-chain"></div>
+            </div>
+
+            <!-- Visual tags (rotated per local view) -->
+            <div id="tag-top" class="player-tag"></div>
+            <div id="tag-right" class="player-tag"></div>
+            <div id="tag-left" class="player-tag"></div>
+            <div id="tag-bottom" class="player-tag"></div>
+
+            <div class="boneyard">
+                <div id="bone-pile"></div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 30px; font-weight: 800;">
+                    BONEYARD: <span id="bone-count" style="color:var(--accent-primary)">0</span></div>
+            </div>
         </div>
-        
-        <!-- Marco para cuando se termina la parida -->
-        <div id="MarcoTerminado" class='MarcoCanvas'>
-            <h1>
-                <span
-                    data-idioma-en='Game finished' 
-                    data-idioma-cat="Partida Finalitzada" 
-                    data-idioma-es='Partida TERMINADA'></span>
-            </h1>
-            <p>
-                <span id="EquipoGanador">x</span>
-                <span
-                    data-idioma-en=' has won the game with ' 
-                    data-idioma-cat=" ha guanyat la partida amb " 
-                    data-idioma-es=' ha ganado la partida con '></span>
-                <span id="PuntosGanador">x</span>
-                
-                <span 
-                    data-idioma-en=' points.' 
-                    data-idioma-cat=" punts." 
-                    data-idioma-es=' puntos.'></span>
-            </p>
-            <button id="BotonTerminar"
-                    data-idioma-en='End game' 
-                    data-idioma-cat="Finalitzar" 
-                    data-idioma-es='Terminar'></button>
+
+        <div id="action-bar">
+            <button id="btn-draw" class="action-btn" onclick="handleDraw()">DRAW CARD</button>
+            <button id="btn-pass" class="action-btn" onclick="handlePass()" style="background:#1e293b">PASS
+                TURN</button>
         </div>
-        
-        <div class='MarcoCanvas' id="Historial">
-            
+
+        <div id="footer">
+            <div class="hand-container">
+                <div id="my-hand"></div>
+            </div>
         </div>
-        
-        <div class='MarcoCanvas' id="DatosJuego">
-            <table>
-                <tr>
-                    <td>
-                        <span
-                            data-idioma-en='Hand' 
-                            data-idioma-cat="Mà" 
-                            data-idioma-es='Mano'></span>
-                    </td>
-                    <td>:</td>
-                    <td id="Mano">0</td>
-                </tr>
-                <tr>
-                    <td>
-                        <span
-                            data-idioma-en='Turn' 
-                            data-idioma-cat="Torn" 
-                            data-idioma-es='Turno'></span>
-                    </td>
-                    <td>:</td>
-                    <td id="Turno">0</td>
-                </tr>
-                <tr>
-                    <td>
-                        <span
-                            data-idioma-en='Player' 
-                            data-idioma-cat="Jugador" 
-                            data-idioma-es='Jugador'></span>
-                    </td>
-                    <td>:</td>
-                    <td id="Jugador">0</td>
-                </tr>                
-            </table>
-            <hr />
-            <table>
-                    
-<!--                <tr>
-                    <td style="border-bottom:2px solid #FFF"></td>
-                    <td></td>
-                    <td style="border-bottom:2px solid #FFF"></td>
-                </tr>-->
-                
-                <tr>
-                    <td id="NombreEquipo1"></td>
-                    <td>:</td>
-                    <td id="Equipo1">0</td>
-                </tr>
-                <tr>
-                    <td id="NombreEquipo2"></td>
-                    <td>:</td>
-                    <td id="Equipo2">0</td>
-                </tr>
-            </table>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="overlay">
+        <div class="modal">
+            <h2 id="modal-title" style="margin-bottom: 20px; font-size: 2rem;">ROUND FINISHED</h2>
+            <div id="modal-body"></div>
+            <button class="btn-prime" onclick="nextRound()">START NEXT ROUND</button>
         </div>
-        
-<!--        <div id ="MarcoPartida" class='MarcoCanvas'> 
-            <table id="TablaDatos">
-                <tr>
-                    <td id="Partida">Partida 1</td>
-                    <td id="Turno">Turno 1</td>
-                    <td id="Jugador">Jugador 1</td>
-                </tr>                
-            </table>
-            
-        </div> -->
-        
-        <div id='Msg1' class='MarcoCanvas' ></div>   <!-- Mensaje Jugador 1 -->
-        <div id='Msg2' class='MarcoCanvas' ></div>   <!-- Mensaje Jugador 2 -->
-        <div id='Msg3' class='MarcoCanvas' ></div>   <!-- Mensaje Jugador 3 -->
-        <div id='Msg4' class='MarcoCanvas' ></div>   <!-- Mensaje Jugador 4 -->
-        
-        <!-- animaciones para la victoria / derrota --> 
-        <div id="VictoriaDerrota">
-    <!--    <div id="Victoria"><img src="./SVG/Partida.svg#Ganada" /></div>
-            <div id="Derrota"><img src="./SVG/Partida.svg#Perdida" /></div> 
-            <div id='ParitdaGanada'><img src='./SVG/PartidaGanada.svg' /></div> -->
-        </div>
-    </body>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        // --- State ---
+        let config = { room: '', myIdx: 0, myName: '' };
+        let state = {
+            board: [],
+            hands: [[], [], [], []],
+            boneyard: [],
+            turn: 0,
+            status: 'lobby',
+            scores: [0, 0, 0, 0],
+            passes: [0, 0, 0, 0],
+            playerNames: ['', '', '', ''],
+            playerActive: [0, 0, 0, 0],
+            lastUpdate: 0
+        };
+
+        const DOTS = { 1: ['d1'], 2: ['d2a', 'd2b'], 3: ['d3a', 'd3b', 'd3c'], 4: ['d4a', 'd4b', 'd4c', 'd4d'], 5: ['d5a', 'd5b', 'd5c', 'd5d', 'd5e'], 6: ['d6a', 'd6b', 'd6c', 'd6d', 'd6e', 'd6f'] };
+
+        // --- Lobby Logic ---
+        function selectSeat(idx) {
+            config.myIdx = idx;
+            document.querySelectorAll('.player-btn').forEach((btn, i) => btn.classList.toggle('selected', i === idx));
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('name-input').value.trim();
+            const room = document.getElementById('room-input').value.trim();
+            if (!name || !room) { showToast("Name and Room are required!"); return; }
+
+            config.room = room;
+            config.myName = name;
+
+            // Update URL with Room Name
+            const url = new URL(window.location);
+            url.searchParams.set('room', room);
+            window.history.pushState({}, '', url);
+
+            syncState();
+            state.playerNames[config.myIdx] = name;
+            state.playerActive[config.myIdx] = Date.now();
+
+            if (state.status === 'lobby' || isStale()) {
+                initGame();
+            } else {
+                saveState();
+            }
+
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('game-view').style.display = 'grid';
+            document.getElementById('display-room').innerText = room;
+            document.getElementById('display-name').innerText = name;
+
+            renderAll();
+            startHeartbeat();
+
+            if (state.board.length === 0 && state.status === 'playing') {
+                checkAutoStart();
+            }
+        }
+
+        function initGame() {
+            let deck = [];
+            for (let i = 0; i <= 6; i++) for (let j = i; j <= 6; j++) deck.push({ a: i, b: j });
+            deck.sort(() => Math.random() - 0.5);
+
+            state.board = [];
+            state.hands = [deck.splice(0, 7), deck.splice(0, 7), deck.splice(0, 7), deck.splice(0, 7)];
+            state.boneyard = deck;
+            state.status = 'playing';
+            state.passes = [0, 0, 0, 0];
+            state.lastUpdate = Date.now();
+
+            for (let p = 0; p < 4; p++) {
+                if (state.hands[p].some(c => c.a === 0 && c.b === 0)) state.turn = p;
+            }
+            saveState();
+        }
+
+        function checkAutoStart() {
+            if (state.turn === config.myIdx) {
+                const has00 = state.hands[config.myIdx].some(c => c.a === 0 && c.b === 0);
+                if (has00) showToast("YOU START THE GAME WITH 0:0!");
+            }
+        }
+
+        function saveState() {
+            state.lastUpdate = Date.now();
+            localStorage.setItem(`dom_royal_${config.room}`, JSON.stringify(state));
+        }
+
+        function syncState() {
+            const saved = localStorage.getItem(`dom_royal_${config.room}`);
+            if (saved) state = JSON.parse(saved);
+        }
+
+        function isStale() { return Date.now() - state.lastUpdate > 1000 * 60 * 15; }
+
+        function startHeartbeat() {
+            setInterval(() => {
+                syncState();
+                state.playerActive[config.myIdx] = Date.now();
+                saveState();
+                renderAll();
+            }, 3000);
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === `dom_royal_${config.room}`) {
+                state = JSON.parse(e.newValue);
+                renderAll();
+            }
+        });
+
+        function handleMove(idx, side) {
+            if (state.turn !== config.myIdx || state.status !== 'playing') return;
+            const card = state.hands[config.myIdx][idx];
+
+            if (state.board.length === 0) {
+                const has00 = state.hands[config.myIdx].some(c => c.a === 0 && c.b === 0);
+                if (has00 && (card.a !== 0 || card.b !== 0)) { showToast("Must start with 0:0!"); return; }
+                state.board.push({ a: card.a, b: card.b });
+            } else {
+                const head = state.board[0].a, tail = state.board[state.board.length - 1].b;
+                if (side === 'head') {
+                    if (card.b === head) state.board.unshift({ a: card.a, b: card.b });
+                    else state.board.unshift({ a: card.b, b: card.a });
+                } else {
+                    if (card.a === tail) state.board.push({ a: card.a, b: card.b });
+                    else state.board.push({ a: card.b, b: card.a });
+                }
+            }
+
+            state.hands[config.myIdx].splice(idx, 1);
+            state.passes = [0, 0, 0, 0];
+            if (state.hands[config.myIdx].length === 0) { endRound(config.myIdx); return; }
+            if (state.board[0].a === state.board[state.board.length - 1].b && isBlocked()) { endRound(config.myIdx, true); return; }
+
+            state.turn = (state.turn + 1) % 4;
+            saveState();
+            renderAll();
+        }
+
+        function isBlocked() {
+            if (state.boneyard.length > 0) return false;
+            for (let i = 0; i < 4; i++) if (getPossibles(i).length > 0) return false;
+            return true;
+        }
+
+        function getPossibles(pIdx) {
+            if (state.board.length === 0) return state.hands[pIdx].map((_, i) => ({ idx: i, side: 'tail' }));
+            const h = state.board[0].a, t = state.board[state.board.length - 1].b;
+            let m = [];
+            state.hands[pIdx].forEach((c, i) => {
+                if (c.a === h || c.b === h) m.push({ idx: i, side: 'head' });
+                if (c.a === t || c.b === t) m.push({ idx: i, side: 'tail' });
+            });
+            return m;
+        }
+
+        function handleDraw() {
+            if (state.turn !== config.myIdx || state.boneyard.length === 0) return;
+            state.hands[config.myIdx].push(state.boneyard.pop());
+            saveState();
+            renderAll();
+        }
+
+        function handlePass() {
+            if (state.turn !== config.myIdx) return;
+            state.passes[config.myIdx] = 1;
+            if (state.passes.every(v => v === 1)) {
+                let pts = state.hands.map(h => h.reduce((s, c) => s + c.a + c.b, 0));
+                endRound(pts.indexOf(Math.min(...pts)), false, "BLOCKED");
+            } else {
+                state.turn = (state.turn + 1) % 4;
+                saveState();
+                renderAll();
+            }
+        }
+
+        function endRound(winnerIdx, special = false, title = "ROUND OVER") {
+            state.status = 'ended';
+            let pts = state.hands.map(h => h.reduce((s, c) => s + c.a + c.b, 0));
+            pts[winnerIdx] = 0;
+            pts.forEach((p, i) => state.scores[i] += p);
+            saveState();
+            renderResult(winnerIdx, pts, special, title);
+        }
+
+        function nextRound() {
+            document.getElementById('modal-overlay').classList.remove('active');
+            initGame();
+            renderAll();
+        }
+
+        function renderAll() {
+            const isMyTurn = state.turn === config.myIdx && state.status === 'playing';
+            const order = [(config.myIdx + 2) % 4, (config.myIdx + 1) % 4, (config.myIdx + 3) % 4, config.myIdx];
+            const tags = ['tag-top', 'tag-right', 'tag-left', 'tag-bottom'];
+
+            order.forEach((pIdx, i) => {
+                const el = document.getElementById(tags[i]);
+                const isActive = (Date.now() - state.playerActive[pIdx] < 15000);
+                const name = state.playerNames[pIdx] || `Seat ${pIdx + 1}`;
+                el.innerHTML = `<span class="name">${name}</span>
+                                <span class="status">${isActive ? 'Online' : 'Away'} | ${state.hands[pIdx].length} Cards</span>`;
+                el.classList.toggle('active', state.turn === pIdx);
+            });
+
+            const chain = document.getElementById('domino-chain');
+            chain.innerHTML = '';
+            state.board.forEach(c => chain.appendChild(createDomino(c.a, c.b, c.a !== c.b)));
+
+            const handEl = document.getElementById('my-hand');
+            handEl.innerHTML = '';
+            const poss = isMyTurn ? getPossibles(config.myIdx) : [];
+            state.hands[config.myIdx].forEach((c, i) => {
+                const dom = createDomino(c.a, c.b);
+                const playable = poss.find(m => m.idx === i);
+                if (playable) {
+                    dom.classList.add('playable');
+                    dom.onclick = () => handleMove(i, playable.side);
+                }
+                handEl.appendChild(dom);
+            });
+
+            const hasPossible = poss.length > 0;
+            document.getElementById('btn-draw').style.display = (isMyTurn && !hasPossible && state.boneyard.length > 0) ? 'block' : 'none';
+            document.getElementById('btn-pass').style.display = (isMyTurn && !hasPossible && state.boneyard.length === 0) ? 'block' : 'none';
+            document.getElementById('bone-count').innerText = state.boneyard.length;
+            const pile = document.getElementById('bone-pile');
+            pile.innerHTML = '';
+            for (let i = 0; i < Math.min(state.boneyard.length, 6); i++) {
+                const b = document.createElement('div'); b.className = 'card-back';
+                b.style.transform = `rotate(${Math.random() * 6 - 3}deg)`;
+                pile.appendChild(b);
+            }
+        }
+
+        function createDomino(a, b, horizontal = false) {
+            const div = document.createElement('div');
+            div.className = `domino ${horizontal ? 'horizontal' : ''}`;
+            const half = (v) => {
+                const h = document.createElement('div'); h.className = 'half';
+                if (DOTS[v]) DOTS[v].forEach(p => {
+                    const d = document.createElement('div'); d.className = `dot ${p} v${v}`;
+                    h.appendChild(d);
+                });
+                return h;
+            };
+            div.appendChild(half(a));
+            const s = document.createElement('div'); s.className = 'divider';
+            div.appendChild(s);
+            div.appendChild(half(b));
+            return div;
+        }
+
+        function renderResult(winnerIdx, roundPts, special, title) {
+            document.getElementById('modal-title').innerText = title;
+            let body = `<h2 style='color:var(--accent-primary); margin-bottom:15px'>${state.playerNames[winnerIdx] || 'Player ' + (winnerIdx + 1)} WON!</h2>`;
+            if (special) body += `<p style='color:var(--accent-secondary); font-weight:800'>MASTERSTROKE BLOCK WIN!</p>`;
+            body += `<div style='margin-top:25px'>`;
+            roundPts.forEach((p, i) => {
+                body += `<div style='display:flex; justify-content:space-between; padding:15px; margin-bottom:8px; background:rgba(255,255,255,0.03); border-radius:15px'>
+                    <span>${state.playerNames[i] || 'Player ' + (i + 1)}</span>
+                    <span style='color:var(--accent-primary); font-weight:800'>+${p} PTS (Total: ${state.scores[i]})</span>
+                </div>`;
+            });
+            body += `</div>`;
+            document.getElementById('modal-body').innerHTML = body;
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function showToast(txt) {
+            const t = document.getElementById('toast');
+            t.innerText = txt; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const room = params.get('room');
+            if (room) {
+                document.getElementById('room-input').value = room;
+            }
+        }
+
+        selectSeat(0);
+        checkUrlParams();
+
+        setInterval(() => {
+            const rmVal = document.getElementById('room-input').value.trim();
+            if (!rmVal) return;
+            const saved = localStorage.getItem(`dom_royal_${rmVal}`);
+            if (saved) {
+                const s = JSON.parse(saved);
+                for (let i = 0; i < 4; i++) {
+                    const active = (Date.now() - s.playerActive[i] < 15000);
+                    const name = s.playerNames[i];
+                    document.getElementById(`seat-${i}`).innerText = name ? (active ? name : name + ' (Away)') : 'Empty';
+                }
+            }
+        }, 2000);
+    </script>
+</body>
+
 </html>
