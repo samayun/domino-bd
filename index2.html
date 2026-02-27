@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Domino BD - Bangladeshi Multiplayer Dominoes</title>
+    <meta name="description"
+        content="Play Bangladeshi-style dominoes online with friends across devices. No servers needed.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --card: #334155;
+            --accent: #38bdf8;
+            --accent2: #f59e0b;
+            --green: #22c55e;
+            --red: #ef4444;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --glass: rgba(15, 23, 42, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --c0: #94a3b8;
+            --c1: #06b6d4;
+            --c2: #22c55e;
+            --c3: #ef4444;
+            --c4: #a855f7;
+            --c5: #3b82f6;
+            --c6: #f97316;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ===== LOBBY ===== */
+        #lobby {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        #lobby.hidden {
+            display: none;
+        }
+
+        .lobby-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 40px 30px;
+            width: min(420px, 92vw);
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        }
+
+        .lobby-box h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+
+        .lobby-box h1 span {
+            color: var(--accent);
+        }
+
+        .lobby-box .sub {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .field input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: .2s;
+        }
+
+        .field input:focus {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .field .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .field .row input {
+            flex: 1;
+        }
+
+        .field .row button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .seats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 14px 0 22px;
+        }
+
+        .seat-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 14px 10px;
+            border-radius: 14px;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: .2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .seat-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+
+        .seat-btn .seat-name {
+            font-size: 0.65rem;
+            opacity: .7;
+        }
+
+        .btn-join {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent), #6366f1);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: .2s;
+        }
+
+        .btn-join:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .btn-join:active {
+            scale: .97;
+        }
+
+        #lobby-msg {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 14px;
+            min-height: 18px;
+        }
+
+        /* ===== GAME VIEW ===== */
+        #game {
+            display: none;
+            width: 100%;
+            height: 100%;
+            grid-template-rows: 54px 1fr auto;
+        }
+
+        #game.active {
+            display: grid;
+        }
+
+        /* Header */
+        .hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            background: var(--glass);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            z-index: 50;
+        }
+
+        .hdr .logo {
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .hdr .logo span {
+            color: var(--accent);
+        }
+
+        .hdr-right {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .badge {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot-live {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
+        .btn-leave {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Board */
+        #board {
+            position: relative;
+            background: var(--surface);
+            overflow: hidden;
+            box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.4);
+        }
+
+        #viewport {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            position: relative;
+            cursor: grab;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #viewport:active {
+            cursor: grabbing;
+        }
+
+        #chain {
+            position: absolute;
+            width: 8000px;
+            height: 8000px;
+        }
+
+        /* Player Tags */
+        .ptag {
+            position: absolute;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            height: 48px;
+            min-width: 140px;
+            max-width: 180px;
+        }
+
+        .ptag .av {
+            width: 36px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .ptag .pi {
+            padding: 4px 10px;
+            overflow: hidden;
+        }
+
+        .ptag .pn {
+            font-weight: 700;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ptag .ps {
+            font-size: 0.6rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .ptag.turn {
+            box-shadow: 0 0 0 2px var(--accent), 0 8px 20px rgba(56, 189, 248, 0.3);
+        }
+
+        #pt-top {
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #pt-right {
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+        }
+
+        #pt-left {
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+        }
+
+        #pt-me {
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Boneyard */
+        .bone-info {
+            position: absolute;
+            left: 10px;
+            bottom: 10px;
+            z-index: 20;
+            background: var(--glass);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 0.7rem;
+            font-weight: 700;
+            backdrop-filter: blur(8px);
+        }
+
+        .bone-info span {
+            color: var(--accent);
+        }
+
+        /* Footer / Hand */
+        #footer {
+            background: var(--glass);
+            border-top: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            position: relative;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            max-height: 160px;
+        }
+
+        #hand {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px;
+            align-items: center;
+            overflow-x: auto;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+        }
+
+        #hand::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        #hand::-webkit-scrollbar-thumb {
+            background: var(--muted);
+            border-radius: 4px;
+        }
+
+        /* Action Buttons */
+        #actions {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .act-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            transition: .15s;
+        }
+
+        .act-btn:active {
+            scale: .92;
+        }
+
+        #btn-draw {
+            background: var(--accent2);
+            color: white;
+        }
+
+        #btn-pass {
+            background: var(--card);
+            color: var(--text);
+        }
+
+        /* ===== DOMINO TILES ===== */
+        .tile {
+            width: 48px;
+            height: 96px;
+            background: #f0f0f0;
+            border-radius: 7px;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.35);
+            flex-shrink: 0;
+            transition: transform .15s;
+            position: relative;
+            scroll-snap-align: center;
+        }
+
+        .tile.hz {
+            width: 96px;
+            height: 48px;
+            flex-direction: row;
+        }
+
+        .tile .half {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 3px;
+        }
+
+        .tile .sep {
+            height: 2px;
+            background: rgba(0, 0, 0, 0.08);
+            width: 100%;
+            border-radius: 1px;
+        }
+
+        .tile.hz .sep {
+            width: 2px;
+            height: 100%;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: auto;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+        }
+
+        .dot.v1 {
+            background: var(--c1)
+        }
+
+        .dot.v2 {
+            background: var(--c2)
+        }
+
+        .dot.v3 {
+            background: var(--c3)
+        }
+
+        .dot.v4 {
+            background: var(--c4)
+        }
+
+        .dot.v5 {
+            background: var(--c5)
+        }
+
+        .dot.v6 {
+            background: var(--c6)
+        }
+
+        .d1 {
+            grid-area: 2/2
+        }
+
+        .d2a {
+            grid-area: 1/1
+        }
+
+        .d2b {
+            grid-area: 3/3
+        }
+
+        .d3a {
+            grid-area: 1/3
+        }
+
+        .d3b {
+            grid-area: 2/2
+        }
+
+        .d3c {
+            grid-area: 3/1
+        }
+
+        .d4a {
+            grid-area: 1/1
+        }
+
+        .d4b {
+            grid-area: 1/3
+        }
+
+        .d4c {
+            grid-area: 3/1
+        }
+
+        .d4d {
+            grid-area: 3/3
+        }
+
+        .d5a {
+            grid-area: 1/1
+        }
+
+        .d5b {
+            grid-area: 1/3
+        }
+
+        .d5c {
+            grid-area: 2/2
+        }
+
+        .d5d {
+            grid-area: 3/1
+        }
+
+        .d5e {
+            grid-area: 3/3
+        }
+
+        .d6a {
+            grid-area: 1/1
+        }
+
+        .d6b {
+            grid-area: 1/3
+        }
+
+        .d6c {
+            grid-area: 2/1
+        }
+
+        .d6d {
+            grid-area: 2/3
+        }
+
+        .d6e {
+            grid-area: 3/1
+        }
+
+        .d6f {
+            grid-area: 3/3
+        }
+
+        /* Hand tiles interactive */
+        #hand .tile {
+            cursor: pointer;
+            position: static;
+        }
+
+        #hand .tile.can-play {
+            box-shadow: 0 0 0 2px var(--accent), 0 8px 20px rgba(56, 189, 248, 0.3);
+            transform: translateY(-6px);
+        }
+
+        #hand .tile:active {
+            transform: scale(.92);
+        }
+
+        /* ===== TOAST ===== */
+        #toast {
+            position: fixed;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            z-index: 200;
+            transition: .35s cubic-bezier(.34, 1.56, .64, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
+        }
+
+        #toast.show {
+            top: 70px;
+        }
+
+        #toast.info {
+            background: var(--accent);
+            color: white;
+        }
+
+        #toast.warn {
+            background: var(--accent2);
+            color: white;
+        }
+
+        #toast.pass {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 150;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-bg.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 36px 28px;
+            width: min(420px, 90vw);
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal h2 {
+            font-size: 1.6rem;
+            margin-bottom: 16px;
+        }
+
+        .modal .winner {
+            color: var(--accent);
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .score-row .pts {
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        /* ===== SIDE PICKER (head/tail) ===== */
+        .side-pick-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 120;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .side-pick-bg.open {
+            display: flex;
+        }
+
+        .side-pick {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            text-align: center;
+            width: min(320px, 85vw);
+        }
+
+        .side-pick h3 {
+            margin-bottom: 16px;
+            font-size: 1.1rem;
+        }
+
+        .side-btns {
+            display: flex;
+            gap: 12px;
+        }
+
+        .side-btns button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .side-btns button:active {
+            scale: .93;
+        }
+
+        .side-btns .s-head {
+            background: var(--accent);
+            color: white;
+        }
+
+        .side-btns .s-tail {
+            background: var(--accent2);
+            color: white;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width:600px) {
+            .lobby-box {
+                padding: 28px 20px;
+                border-radius: 22px;
+            }
+
+            .lobby-box h1 {
+                font-size: 1.6rem;
+            }
+
+            .hdr {
+                padding: 0 8px;
+            }
+
+            .hdr .logo {
+                font-size: 0.95rem;
+            }
+
+            .badge {
+                padding: 4px 8px;
+                font-size: 0.6rem;
+            }
+
+            .ptag {
+                height: 38px;
+                min-width: 100px;
+                max-width: 130px;
+                border-radius: 8px;
+            }
+
+            .ptag .av {
+                width: 28px;
+                height: 38px;
+                font-size: 0.9rem;
+            }
+
+            .ptag .pn {
+                font-size: 0.65rem;
+            }
+
+            .ptag .ps {
+                font-size: 0.5rem;
+            }
+
+            .tile {
+                width: 40px;
+                height: 82px;
+                padding: 4px;
+                border-radius: 6px;
+            }
+
+            .tile.hz {
+                width: 82px;
+                height: 40px;
+            }
+
+            .dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            #hand {
+                gap: 6px;
+                padding: 8px 10px;
+            }
+
+            #footer {
+                min-height: 100px;
+                max-height: 130px;
+            }
+
+            .act-btn {
+                padding: 8px 14px;
+                font-size: 0.7rem;
+            }
+
+            .bone-info {
+                font-size: 0.6rem;
+                padding: 4px 10px;
+            }
+
+            #game {
+                grid-template-rows: 46px 1fr auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== LOBBY ===== -->
+    <div id="lobby">
+        <div class="lobby-box">
+            <h1>DOMINO <span>BD</span></h1>
+            <p class="sub">Bangladeshi Multiplayer · No Server Needed</p>
+            <div class="field">
+                <input type="text" id="inp-name" placeholder="Your Name" maxlength="20" autocomplete="off">
+                <div class="row">
+                    <input type="text" id="inp-room" placeholder="Room Code" maxlength="20" autocomplete="off">
+                    <button onclick="copyInvite()">📋 Invite</button>
+                </div>
+            </div>
+            <p style="font-size:.75rem;color:var(--muted);margin-bottom:8px">Pick your seat:</p>
+            <div class="seats">
+                <button class="seat-btn active" onclick="pickSeat(0)">Seat 1 <span class="seat-name"
+                        id="sn-0">Empty</span></button>
+                <button class="seat-btn" onclick="pickSeat(1)">Seat 2 <span class="seat-name"
+                        id="sn-1">Empty</span></button>
+                <button class="seat-btn" onclick="pickSeat(2)">Seat 3 <span class="seat-name"
+                        id="sn-2">Empty</span></button>
+                <button class="seat-btn" onclick="pickSeat(3)">Seat 4 <span class="seat-name"
+                        id="sn-3">Empty</span></button>
+            </div>
+            <button class="btn-join" id="btn-join" onclick="joinRoom()">JOIN TABLE</button>
+            <p id="lobby-msg">Initializing network…</p>
+        </div>
+    </div>
+
+    <!-- ===== GAME ===== -->
+    <div id="game">
+        <div class="hdr">
+            <div class="logo">DOMINO <span>BD</span></div>
+            <div class="hdr-right">
+                <div class="badge">
+                    <div class="dot-live"></div> <span id="disp-room">-</span>
+                </div>
+                <button class="btn-leave" onclick="location.reload()">LEAVE</button>
+            </div>
+        </div>
+        <div id="board">
+            <div id="viewport">
+                <div id="chain"></div>
+            </div>
+            <div class="ptag" id="pt-top"></div>
+            <div class="ptag" id="pt-right"></div>
+            <div class="ptag" id="pt-left"></div>
+            <div class="ptag" id="pt-me"></div>
+            <div class="bone-info">BONEYARD: <span id="bone-ct">0</span></div>
+            <div id="actions">
+                <button class="act-btn" id="btn-draw" onclick="doDraw()">DRAW</button>
+                <button class="act-btn" id="btn-pass" onclick="doPass()">PASS</button>
+            </div>
+        </div>
+        <div id="footer">
+            <div id="hand"></div>
+        </div>
+    </div>
+
+    <!-- Side picker -->
+    <div class="side-pick-bg" id="side-bg">
+        <div class="side-pick">
+            <h3>Play which side?</h3>
+            <div class="side-btns">
+                <button class="s-head" id="sp-head">⬅ HEAD</button>
+                <button class="s-tail" id="sp-tail">TAIL ➡</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-bg" id="modal-bg">
+        <div class="modal">
+            <h2 id="m-title">ROUND OVER</h2>
+            <div id="m-body"></div>
+            <button class="btn-join" style="margin-top:18px" onclick="nextRound()">NEXT ROUND</button>
+        </div>
+    </div>
+
+    <div id="toast" class="info"></div>
+
+    <script>
+        // ===== CONSTANTS =====
+        const DOTS = { 1: ['d1'], 2: ['d2a', 'd2b'], 3: ['d3a', 'd3b', 'd3c'], 4: ['d4a', 'd4b', 'd4c', 'd4d'], 5: ['d5a', 'd5b', 'd5c', 'd5d', 'd5e'], 6: ['d6a', 'd6b', 'd6c', 'd6d', 'd6e', 'd6f'] };
+        const COLORS = ['#38bdf8', '#a855f7', '#f97316', '#22c55e'];
+
+        // ===== STATE =====
+        let cfg = { room: '', idx: 0, name: '', isHost: false };
+        let S = {
+            board: [], hands: [[], [], [], []], boneyard: [], turn: 0,
+            status: 'lobby', scores: [0, 0, 0, 0], passes: [0, 0, 0, 0],
+            names: ['', '', '', ''], alive: [0, 0, 0, 0], round: 1
+        };
+        let peer = null, conns = {}, hostConn = null;
+
+        // ===== PEER INIT =====
+        function initPeer() {
+            if (peer) peer.destroy();
+            peer = new Peer('dbd-' + Math.random().toString(36).substr(2, 8));
+            peer.on('open', () => { document.getElementById('lobby-msg').innerText = 'Network ready — enter name & room.'; });
+            peer.on('error', e => console.warn('Peer err:', e));
+        }
+
+        // ===== HOST RESPONDERS =====
+        function hostOnConn(conn) {
+            conn.on('open', () => {
+                conns[conn.peer] = conn;
+                conn.send({ t: 'SYNC', s: S });
+            });
+            conn.on('data', d => {
+                if (d.t === 'HB') { S.names[d.i] = d.n; S.alive[d.i] = Date.now(); broadcast(); }
+                if (d.t === 'ACT') execAction(d.a);
+            });
+            conn.on('close', () => { delete conns[conn.peer]; });
+        }
+
+        // ===== CLIENT RESPONDERS =====
+        function clientOnConn(conn) {
+            conn.on('data', d => { if (d.t === 'SYNC') { S = d.s; render(); } });
+            conn.on('close', () => { toast('Host left. Reloading…', 'warn'); setTimeout(() => location.reload(), 1500); });
+        }
+
+        function broadcast() {
+            if (!cfg.isHost) return;
+            const m = { t: 'SYNC', s: S };
+            Object.values(conns).forEach(c => { if (c.open) c.send(m); });
+            render();
+        }
+
+        // ===== LOBBY =====
+        function pickSeat(i) {
+            cfg.idx = i;
+            document.querySelectorAll('.seat-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+        }
+
+        function copyInvite() {
+            const r = document.getElementById('inp-room').value.trim();
+            if (!r) { toast('Enter room first!', 'warn'); return; }
+            const u = new URL(location); u.searchParams.set('room', r);
+            navigator.clipboard.writeText(u.toString()); toast('Invite copied!', 'info');
+        }
+
+        async function joinRoom() {
+            const name = document.getElementById('inp-name').value.trim();
+            const room = document.getElementById('inp-room').value.trim().toUpperCase();
+            if (!name || !room) { toast('Name & Room required!', 'warn'); return; }
+            cfg.room = room; cfg.name = name;
+            const btn = document.getElementById('btn-join');
+            btn.innerText = 'Joining…'; btn.disabled = true;
+            const hostId = 'dbd-host-' + room;
+
+            if (peer) peer.destroy();
+            peer = new Peer();
+            peer.on('open', () => {
+                const c = peer.connect(hostId);
+                let ok = false;
+                const to = setTimeout(() => { if (!ok) { c.close(); becomeHost(hostId); } }, 3000);
+                c.on('open', () => { ok = true; clearTimeout(to); cfg.isHost = false; hostConn = c; clientOnConn(c); enterGame(); toast('Joined table!', 'info'); });
+            });
+            peer.on('error', e => {
+                if (e.type === 'peer-unavailable') {/* timeout handles */ }
+                else console.warn('join err', e);
+            });
+        }
+
+        function becomeHost(hostId) {
+            if (peer) peer.destroy();
+            peer = new Peer(hostId);
+            peer.on('open', () => { cfg.isHost = true; enterGame(); initDeal(); broadcast(); toast('Table created!', 'info'); });
+            peer.on('connection', hostOnConn);
+            peer.on('error', e => {
+                if (e.type === 'unavailable-id') {
+                    // someone else just became host, retry join
+                    setTimeout(() => joinRoom(), 400 + Math.random() * 400);
+                } else {
+                    console.error('host err', e);
+                    const btn = document.getElementById('btn-join');
+                    btn.disabled = false; btn.innerText = 'JOIN TABLE';
+                }
+            });
+        }
+
+        function enterGame() {
+            document.getElementById('lobby').classList.add('hidden');
+            const g = document.getElementById('game'); g.classList.add('active');
+            document.getElementById('disp-room').innerText = cfg.room;
+            const u = new URL(location); u.searchParams.set('room', cfg.room); history.pushState({}, '', u);
+            render();
+            startHeartbeat();
+            startAutoPassCheck();
+            setTimeout(() => {
+                const v = document.getElementById('viewport');
+                v.scrollLeft = 4000 - v.clientWidth / 2;
+                v.scrollTop = 4000 - v.clientHeight / 2;
+            }, 300);
+        }
+
+        function startHeartbeat() {
+            S.names[cfg.idx] = cfg.name; S.alive[cfg.idx] = Date.now();
+            setInterval(() => {
+                if (cfg.isHost) { S.names[cfg.idx] = cfg.name; S.alive[cfg.idx] = Date.now(); broadcast(); }
+                else if (hostConn && hostConn.open) hostConn.send({ t: 'HB', i: cfg.idx, n: cfg.name });
+            }, 3000);
+        }
+
+        // ===== AUTO PASS (every 100ms) =====
+        function startAutoPassCheck() {
+            setInterval(() => {
+                if (S.status !== 'playing') return;
+                if (S.turn !== cfg.idx) return;
+                const moves = getMoves(cfg.idx);
+                if (moves.length === 0 && S.boneyard.length === 0) {
+                    toast(cfg.name + ' AUTO-PASSED', 'pass');
+                    act({ t: 'PASS' });
+                }
+            }, 100);
+        }
+
+        // ===== GAME LOGIC =====
+        function initDeal() {
+            if (!cfg.isHost) return;
+            let deck = [];
+            for (let i = 0; i <= 6; i++) for (let j = i; j <= 6; j++) deck.push({ a: i, b: j });
+            for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[deck[i], deck[j]] = [deck[j], deck[i]]; }
+            S.board = []; S.hands = [deck.splice(0, 7), deck.splice(0, 7), deck.splice(0, 7), deck.splice(0, 7)];
+            S.boneyard = deck; S.status = 'playing'; S.passes = [0, 0, 0, 0];
+            // Find who has 0:0
+            S.turn = 0;
+            for (let p = 0; p < 4; p++) if (S.hands[p].some(c => c.a === 0 && c.b === 0)) S.turn = p;
+        }
+
+        function getMoves(p) {
+            if (S.board.length === 0) return S.hands[p].map((_, i) => ({ i, side: 'tail' }));
+            const h = S.board[0].a, t = S.board[S.board.length - 1].b;
+            let m = [];
+            S.hands[p].forEach((c, i) => {
+                let sides = [];
+                if (c.a === h || c.b === h) sides.push('head');
+                if (c.a === t || c.b === t) sides.push('tail');
+                // if head===tail, deduplicate
+                if (h === t && sides.length > 1) sides = ['head'];
+                sides.forEach(s => m.push({ i, side: s }));
+            });
+            return m;
+        }
+
+        function allBlocked() {
+            if (S.boneyard.length > 0) return false;
+            for (let p = 0; p < 4; p++) if (getMoves(p).length > 0) return false;
+            return true;
+        }
+
+        function execAction(a) {
+            if (!cfg.isHost) return;
+            if (a.t === 'MOVE') {
+                const card = S.hands[a.p][a.hi];
+                if (!card) return;
+                if (S.board.length === 0) {
+                    S.board.push({ a: card.a, b: card.b });
+                } else {
+                    const head = S.board[0].a, tail = S.board[S.board.length - 1].b;
+                    if (a.side === 'head') {
+                        if (card.b === head) S.board.unshift({ a: card.a, b: card.b });
+                        else S.board.unshift({ a: card.b, b: card.a });
+                    } else {
+                        if (card.a === tail) S.board.push({ a: card.a, b: card.b });
+                        else S.board.push({ a: card.b, b: card.a });
+                    }
+                }
+                S.hands[a.p].splice(a.hi, 1);
+                S.passes = [0, 0, 0, 0];
+                if (S.hands[a.p].length === 0) { endRound(a.p); }
+                else if (allBlocked()) {
+                    let pts = S.hands.map(h => h.reduce((s, c) => s + c.a + c.b, 0));
+                    endRound(pts.indexOf(Math.min(...pts)), false, 'ALL BLOCKED');
+                }
+                else { S.turn = (S.turn + 1) % 4; }
+            } else if (a.t === 'DRAW') {
+                if (S.boneyard.length > 0) S.hands[a.p].push(S.boneyard.pop());
+            } else if (a.t === 'PASS') {
+                S.passes[a.p] = 1;
+                // Check if all 4 passed
+                if (S.passes.every(v => v === 1)) {
+                    let pts = S.hands.map(h => h.reduce((s, c) => s + c.a + c.b, 0));
+                    endRound(pts.indexOf(Math.min(...pts)), false, 'ALL BLOCKED');
+                } else {
+                    S.turn = (S.turn + 1) % 4;
+                }
+            } else if (a.t === 'NEXT') {
+                S.round++;
+                initDeal();
+            }
+            broadcast();
+        }
+
+        function endRound(winner, special = false, title = 'ROUND OVER') {
+            S.status = 'ended';
+            let pts = S.hands.map(h => h.reduce((s, c) => s + c.a + c.b, 0));
+            pts[winner] = 0;
+            pts.forEach((p, i) => S.scores[i] += p);
+            showResult(winner, pts, special, title);
+        }
+
+        function act(action) {
+            action.p = cfg.idx;
+            if (cfg.isHost) execAction(action);
+            else if (hostConn && hostConn.open) hostConn.send({ t: 'ACT', a: action });
+        }
+
+        function doDraw() { act({ t: 'DRAW' }); }
+        function doPass() { toast(cfg.name + ' passed', 'pass'); act({ t: 'PASS' }); }
+        function nextRound() { document.getElementById('modal-bg').classList.remove('open'); act({ t: 'NEXT' }); }
+
+        // ===== SIDE PICKER =====
+        let pendingMove = null;
+        function pickSide(idx, possibles) {
+            const sides = possibles.filter(m => m.i === idx);
+            if (sides.length === 1) { act({ t: 'MOVE', hi: idx, side: sides[0].side }); return; }
+            // Show picker
+            pendingMove = idx;
+            document.getElementById('side-bg').classList.add('open');
+            document.getElementById('sp-head').onclick = () => { document.getElementById('side-bg').classList.remove('open'); act({ t: 'MOVE', hi: idx, side: 'head' }); };
+            document.getElementById('sp-tail').onclick = () => { document.getElementById('side-bg').classList.remove('open'); act({ t: 'MOVE', hi: idx, side: 'tail' }); };
+        }
+
+        // ===== RENDER =====
+        function render() {
+            const myTurn = S.turn === cfg.idx && S.status === 'playing';
+
+            // Board chain (snake)
+            const chain = document.getElementById('chain');
+            chain.innerHTML = '';
+            let cx = 4000, cy = 4000, dx = 1, step = 0;
+            const PER_ROW = 7;
+            S.board.forEach(c => {
+                const dbl = (c.a === c.b);
+                const el = mkTile(c.a, c.b, !dbl);
+                if (step >= PER_ROW) { cy += dbl ? 70 : 110; dx *= -1; step = 0; }
+                el.style.position = 'absolute';
+                el.style.left = cx + 'px'; el.style.top = cy + 'px';
+                cx += (dbl ? 55 : 100) * dx; step++;
+                chain.appendChild(el);
+            });
+
+            // Hand
+            const hand = document.getElementById('hand');
+            hand.innerHTML = '';
+            const poss = myTurn ? getMoves(cfg.idx) : [];
+            (S.hands[cfg.idx] || []).forEach((c, i) => {
+                const el = mkTile(c.a, c.b, false);
+                const sides = poss.filter(m => m.i === i);
+                if (sides.length > 0) {
+                    el.classList.add('can-play');
+                    el.onclick = () => pickSide(i, poss);
+                }
+                hand.appendChild(el);
+            });
+
+            // Boneyard
+            document.getElementById('bone-ct').innerText = S.boneyard.length;
+
+            // Actions
+            const hasMoves = poss.length > 0;
+            document.getElementById('btn-draw').style.display = (myTurn && !hasMoves && S.boneyard.length > 0) ? 'block' : 'none';
+            document.getElementById('btn-pass').style.display = (myTurn && !hasMoves && S.boneyard.length === 0) ? 'block' : 'none';
+
+            // Player tags
+            const order = [(cfg.idx + 2) % 4, (cfg.idx + 1) % 4, (cfg.idx + 3) % 4, cfg.idx];
+            const slots = ['pt-top', 'pt-right', 'pt-left', 'pt-me'];
+            order.forEach((p, si) => {
+                const el = document.getElementById(slots[si]);
+                const nm = S.names[p] || ('Player ' + (p + 1));
+                const online = (Date.now() - S.alive[p]) < 12000;
+                el.innerHTML = `<div class="av" style="background:${COLORS[p]}">${nm[0].toUpperCase()}</div><div class="pi"><div class="pn">${nm}${online ? '' : ' ⏳'}</div><div class="ps">${S.scores[p]}pts · ${(S.hands[p] || []).length}🂠</div></div>`;
+                el.classList.toggle('turn', S.turn === p);
+            });
+        }
+
+        function mkTile(a, b, hz) {
+            const d = document.createElement('div');
+            d.className = 'tile' + (hz ? ' hz' : '');
+            const half = v => {
+                const h = document.createElement('div'); h.className = 'half';
+                if (DOTS[v]) DOTS[v].forEach(p => { const dot = document.createElement('div'); dot.className = 'dot ' + p + ' v' + v; h.appendChild(dot); });
+                return h;
+            };
+            d.appendChild(half(a));
+            const s = document.createElement('div'); s.className = 'sep'; d.appendChild(s);
+            d.appendChild(half(b));
+            return d;
+        }
+
+        // ===== RESULT MODAL =====
+        function showResult(w, pts, special, title) {
+            document.getElementById('m-title').innerText = title;
+            let b = `<div class="winner">${S.names[w] || 'Player ' + (w + 1)} WON! 🏆</div>`;
+            if (special) b += '<p style="color:var(--accent2);font-weight:800;margin-bottom:10px">BLOCKED VICTORY!</p>';
+            pts.forEach((p, i) => {
+                b += `<div class="score-row"><span>${S.names[i] || 'Player ' + (i + 1)}</span><span class="pts">+${p}</span></div>`;
+            });
+            document.getElementById('m-body').innerHTML = b;
+            document.getElementById('modal-bg').classList.add('open');
+        }
+
+        // ===== TOAST =====
+        let toastTimer = null;
+        function toast(txt, type = 'info') {
+            const t = document.getElementById('toast');
+            t.innerText = txt; t.className = type + ' show';
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // ===== PAN LOGIC =====
+        {
+            const vp = document.getElementById('viewport');
+            let down = false, sx, sy, sl, st;
+            const md = e => {
+                const ev = e.touches ? e.touches[0] : e;
+                if (e.target.closest('.tile')) return;
+                down = true; sx = ev.pageX; sy = ev.pageY; sl = vp.scrollLeft; st = vp.scrollTop;
+            };
+            const mu = () => down = false;
+            const mm = e => {
+                if (!down) return;
+                const ev = e.touches ? e.touches[0] : e;
+                e.preventDefault();
+                vp.scrollLeft = sl - (ev.pageX - sx);
+                vp.scrollTop = st - (ev.pageY - sy);
+            };
+            vp.addEventListener('mousedown', md); vp.addEventListener('touchstart', md, { passive: true });
+            window.addEventListener('mouseup', mu); window.addEventListener('touchend', mu);
+            vp.addEventListener('mousemove', mm); vp.addEventListener('touchmove', mm, { passive: false });
+        }
+
+        // ===== LOCAL SEAT PREVIEW =====
+        setInterval(() => {
+            const r = document.getElementById('inp-room').value.trim().toUpperCase();
+            if (!r) return;
+            const k = 'dbd_seats_' + r;
+            const name = document.getElementById('inp-name').value.trim();
+            if (name) {
+                let d = JSON.parse(localStorage.getItem(k) || '{}');
+                d[cfg.idx] = { n: name, t: Date.now() };
+                localStorage.setItem(k, JSON.stringify(d));
+            }
+            const saved = JSON.parse(localStorage.getItem(k) || '{}');
+            for (let i = 0; i < 4; i++) {
+                const s = saved[i];
+                document.getElementById('sn-' + i).innerText = (s && s.t && Date.now() - s.t < 10000) ? s.n : 'Empty';
+            }
+        }, 2000);
+
+        // ===== BOOT =====
+        const urlP = new URLSearchParams(location.search);
+        if (urlP.get('room')) document.getElementById('inp-room').value = urlP.get('room');
+        initPeer();
+    </script>
+</body>
+
+</html>
